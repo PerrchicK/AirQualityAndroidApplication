@@ -1,6 +1,12 @@
 <resources>
-    <string name="app_name">AirQualityApplication</string>
+    <string name="app_name">Pollutant Lookup</string>
     <string name="action_map">Show map</string>
+    <!--Your Google Maps API Key, generate your own here: https://console.cloud.google.com/google/maps-apis/apis/maps-android-backend.googleapis.com/credentials?project=project-name-->
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false"></string>
+    <!-- Your BreezoMeter API Key, generate your own by entering here and signing up: https://docs.breezometer.com/api-documentation/air-quality-api/v2/-->
+    <string name="development_breezo_key"></string>
+    <string name="production_breezo_key"></string>
     <string name="close_title">X</string>
     <string name="empty_baqi">\??</string>
+    <string name="app_info">This is a POC project that demonstrates how can we search for \"drug score\" in specific areas, in this POC weֿֿ\'re searching only for a specific pollutant, named \"PM2.5\", but you can easily think about it as a chemical material in the air that the app will search in the real world solution.</string>
 </resources>

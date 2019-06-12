@@ -2,32 +2,6 @@ package com.perrchick.airqualityapplication.util
 
 import com.perrchick.airqualityapplication.BuildConfig
 
-// test
-class Constants {
-    object Extra {
-
-        class Keys {
-            companion object {
-                const val SHOULD_SKIP_SPLASH = "SHOULD_SKIP_SPLASH"
-                const val URL_STRING = "URL_STRING"
-            }
-        }
-    }
-    object FlutterMethodChannel {
-        class Keys {
-            companion object {
-                const val FAILURE_RESULT = "0"
-                const val SUCCESS_RESULT = "1"
-            }
-        }
-    }
-
-    companion object {
-        const val ONE_MINUTE_MILLISECONDS: Long = 1000 * 60
-        const val ONE_HOUR_IN_MILLISECONDS: Long = ONE_MINUTE_MILLISECONDS * 60
-    }
-}
-
 enum class Environment {
     PRODUCTION, DEVELOPMENT;
 
@@ -50,6 +24,14 @@ enum class Environment {
             } else {
                 return PRODUCTION
             }
+        }
+    }
+}
+
+class Constants {
+    class Keys {
+        companion object {
+            const val Baqi = "baqi"
         }
     }
 

@@ -3,17 +3,12 @@ package com.perrchick.airqualityapplication;
 import android.app.Application;
 import android.os.Handler;
 import androidx.annotation.Nullable;
-import com.google.android.gms.maps.model.LatLng;
 
 import java.lang.ref.WeakReference;
 
 public class AirQualityApplication extends Application {
     private static WeakReference<AirQualityApplication> shared;
     private Handler mainThreadHandler;
-    @Nullable
-    public Integer currentBaqi;
-    @Nullable
-    public LatLng currentLocation;
 
     @androidx.annotation.Nullable
     public static AirQualityApplication shared() {

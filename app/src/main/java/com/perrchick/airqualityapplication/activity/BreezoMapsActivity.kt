@@ -1,12 +1,14 @@
 package com.perrchick.airqualityapplication.activity
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.View
-import android.widget.ProgressBar
-import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -14,13 +16,17 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.perrchick.airqualityapplication.AirQualityApplication
 import com.perrchick.airqualityapplication.R
-import com.perrchick.airqualityapplication.util.Configurations
-import com.perrchick.airqualityapplication.util.PrivateEventBus
+import com.perrchick.airqualityapplication.bl.DecisionMaker
+import com.perrchick.airqualityapplication.util.*
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
 
 class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapClickListener {
+    companion object {
+        private const val LOCATION_PERMISSION_REQUEST_CODE: Int = 0x1001
+    }
+
     private var baqiObserver: PrivateEventBus.Receiver? = null
     private var locationObserver: PrivateEventBus.Receiver? = null
 
@@ -69,8 +75,6 @@ class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.On
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        //super.onCreate(savedInstanceState)
-
         savedInstanceState?.let {
             super.onCreate(it)
         } ?: run {
@@ -91,7 +95,7 @@ class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.On
     override fun onResume() {
         super.onResume()
 
-        updateNewBaqiLevel(AirQualityApplication.instance()?.currentBaqi)
+        updateNewBaqiLevel(null)
 
         locationObserver = PrivateEventBus.createNewReceiver(object : PrivateEventBus.BroadcastReceiverListener {
             override fun onBroadcastReceived(intent: Intent, receiver: PrivateEventBus.Receiver) {
@@ -111,10 +115,10 @@ class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.On
 
         baqiObserver = PrivateEventBus.createNewReceiver(object : PrivateEventBus.BroadcastReceiverListener {
             override fun onBroadcastReceived(intent: Intent, receiver: PrivateEventBus.Receiver) {
-//                AppLogger.log(intent)
-                //intent.extras.getInt("baqi")
-                AirQualityApplication.instance()?.currentBaqi?.let {
-                    updateNewBaqiLevel(it)
+                intent.extras?.let {extras ->
+                    (extras[Constants.Keys.Baqi] as? Int)?.let {
+                        updateNewBaqiLevel(it)
+                    } // ... be :)
                 }
             }
         }, PrivateEventBus.Action.NEW_BAQI_ARRIVED)
@@ -141,6 +145,12 @@ class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.On
     override fun onMapReady(googleMap: GoogleMap) {
         this.googleMap = googleMap
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
+        } else {
+            googleMap.isMyLocationEnabled = true
+        }
+
         googleMap.mapType = GoogleMap.MAP_TYPE_NORMAL
         googleMap.uiSettings.isCompassEnabled = false
         googleMap.uiSettings.isZoomControlsEnabled = false
@@ -164,27 +174,34 @@ class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.On
 
     private fun updateNewBaqiLevel(baqi: Int?) {
         if (baqi == null) {
-            txtBaqi.text = "~~"//getString(R.string.baqi_map_title_digit_format, baqi)
+            txtBaqi.text = "??"
         }
 
         baqi?.let {
-            txtBaqi.text = "$it"//getString(R.string.baqi_map_title_digit_format, baqi)
+            txtBaqi.text = "  BAQI: $it  "//getString(R.string.baqi_map_title_digit_format, baqi)
         }
     }
 
-    private fun addBaqiMarker(currentLocation: LatLng? = null, animated: Boolean = false) {
+    private fun addBaqiMarker(currentLocation: LatLng? = null, animated: Boolean = false, value: Double? = null) {
         googleMap?.let { _ ->
-            if (currentLocation == null) {
-                AirQualityApplication.instance()?.currentLocation?.let { currentLocation ->
-                    setLocation(currentLocation, DEFAULT_ZOOM_LEVEL, animated = animated)
-                }
-            } else {
-                setLocation(currentLocation, animated = animated)
+            if (currentLocation != null) {
+                setLocation(currentLocation, animated = animated, value = value)
             }
         }
     }
 
-    private fun setLocation(currentLocation: LatLng, zoom: Float? = null, animated: Boolean = false) {
+    @SuppressLint("MissingPermission")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                googleMap?.isMyLocationEnabled = true
+            }
+        }
+    }
+
+    private fun setLocation(currentLocation: LatLng, zoom: Float? = null, animated: Boolean = false, value: Double? = null) {
         var _zoom: Float? = zoom
         if (_zoom == null && googleMap?.cameraPosition?.zoom != null) {
             _zoom = googleMap?.cameraPosition!!.zoom
@@ -197,27 +214,37 @@ class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.On
                 googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, z))
             }
 
-            var markerOptions = MarkerOptions()
+            //baqiMarker?.remove()
+            value?.let {
+                var markerOptions = MarkerOptions()
                     .position(currentLocation)
                     .flat(true)
                     .visible(true)
                     //.title(Strings.localized(R.string.you_are_here))
-                    .icon(BitmapDescriptorFactory.fromResource(android.R.drawable.ic_menu_compass))
+                    //.icon(BitmapDescriptorFactory.fromResource(android.R.drawable.ic_menu_compass))
+                        //TODO: Set color according to concentration value
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
 
-            AirQualityApplication.instance()?.currentBaqi?.let { baqi ->
-                markerOptions = markerOptions.title("$baqi")
+                    markerOptions = markerOptions.title("$value")
+
+                baqiMarker = googleMap?.addMarker(markerOptions)
             }
-
-            baqiMarker?.remove()
-            baqiMarker = googleMap?.addMarker(markerOptions)
         }
     }
 
     override fun onMapClick(latLng: LatLng?) {
-        latLng?.let {
+        latLng?.let { currentLocation ->
+            val pollutantName = "pm25"
+            DecisionMaker.fetchPollutantValue(pollutantName, currentLocation.latitude,currentLocation.longitude) { value ->
+                AppLogger.log(value)
+                value?.let {
+                    Utils.debugToast("'$pollutantName' concentration value: $it")
+                    AirQualityApplication.shared()?.runOnUiThread {
+                        addBaqiMarker(latLng, animated = true, value = value)
+                    }
+                }
+            }
             updateNewBaqiLevel(null)
-            AirQualityApplication.instance()?.currentLocation = it
-            addBaqiMarker(latLng, animated = true)
-        } // ... be :)
+        }
     }
 }

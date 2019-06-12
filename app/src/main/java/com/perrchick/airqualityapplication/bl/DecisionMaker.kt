@@ -1,7 +1,5 @@
 package com.perrchick.airqualityapplication.bl
 
-import android.icu.text.StringSearch
-import com.perrchick.airqualityapplication.AirQualityApplication
 import com.perrchick.airqualityapplication.communication.Communicator
 import com.perrchick.airqualityapplication.util.AppLogger
 import com.perrchick.airqualityapplication.util.Strings
@@ -38,6 +36,10 @@ class DecisionMaker {
                 }
             }
 
+        }
+
+        fun fetchPollutantValue(pollutantName: String, latitude: Double, longitude: Double, callback: (Double?) -> Unit) {
+            Communicator.fetchPollutantValue(pollutantName.toLowerCase(), latitude, longitude, callback)
         }
     }
 }

@@ -58,7 +58,6 @@ public abstract class BRZTimer {
 
         isStarted = true;
         getSharedHandler().postDelayed(runnableTask, afterDelayMillis);
-        //ScenesApplication.getHandler().postDelayed(runnableTask, afterDelayMillis);
         return this;
     }
 

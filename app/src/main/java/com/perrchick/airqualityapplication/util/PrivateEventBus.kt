@@ -14,10 +14,8 @@ class PrivateEventBus {
     object Action {
         const val APPLICATION_GOING_BACKGROUND = BuildConfig.APPLICATION_ID + " - yo"
         const val APPLICATION_GOING_FOREGROUND = BuildConfig.APPLICATION_ID + " - yoyo"
-        const val FIREBASE_IS_READY = BuildConfig.APPLICATION_ID + " - runs whenever firebase is connected and has an updated clock diff"
         const val NEW_BAQI_ARRIVED: String = BuildConfig.APPLICATION_ID + " - new_baqi_is_here"
         const val UPDATE_LOCATION: String = BuildConfig.APPLICATION_ID + " - location updated"
-        const val MAP_TAP: String = BuildConfig.APPLICATION_ID + " - map_tap"
     }
 
     object Parameter {

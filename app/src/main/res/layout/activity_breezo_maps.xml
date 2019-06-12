@@ -15,6 +15,10 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent">
         <TextView
+                android:textAlignment="center"
+                android:background="@drawable/bg_white_rounded_corners"
+                android:layout_centerInParent="true"
+                android:paddingBottom="10dp"
                 android:layout_gravity="top"
                 tools:ignore="RtlHardcoded"
                 android:id="@+id/txt_baqi_level"
