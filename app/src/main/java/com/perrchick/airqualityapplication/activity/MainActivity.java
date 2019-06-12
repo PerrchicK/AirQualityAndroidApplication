@@ -1,5 +1,6 @@
-package com.perrchick.airqualityapplication;
+package com.perrchick.airqualityapplication.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -10,7 +11,9 @@ import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import com.perrchick.airqualityapplication.R;
 import com.perrchick.airqualityapplication.bl.DecisionMaker;
+import com.perrchick.airqualityapplication.util.AppLogger;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,9 +42,13 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_map:
+                startActivity(new Intent(this, BreezoMapsActivity.class));
+                return true;
+                default:
+                    AppLogger.Companion.error(this,"Unhandled menu ID!");
+                    break;
         }
 
         return super.onOptionsItemSelected(item);

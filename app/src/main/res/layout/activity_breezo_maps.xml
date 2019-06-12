@@ -1,0 +1,28 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:ads="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:orientation="vertical"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
+    <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context=".activity.BreezoMapsActivity" />
+    <RelativeLayout
+            android:layout_gravity="bottom"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent">
+        <TextView
+                android:layout_gravity="top"
+                tools:ignore="RtlHardcoded"
+                android:id="@+id/txt_baqi_level"
+                android:textColor="@color/black"
+                android:textSize="@dimen/baqi_level_font_size"
+                android:text="@string/empty_baqi"
+                android:gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+    </RelativeLayout>
+</FrameLayout>

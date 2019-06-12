@@ -9,10 +9,12 @@ import com.perrchick.airqualityapplication.util.Utils
 
 class DecisionMaker {
     companion object {
+        private val TAG: String = DecisionMaker::class.simpleName.toString()
+
         @JvmStatic
         fun makeDecisionAccordingToBaqi() {
-            Communicator.fetchBaqi(32.43232, 34.32132) { baqi ->
-                AppLogger.log(baqi)
+            Communicator.fetchBaqi(32.8191541, 34.9984632) { baqi ->
+                AppLogger.log(TAG, baqi)
                 //Explanation about Kotlin's `when`: https://kotlinlang.org/docs/reference/control-flow.html
                 when (baqi) {
                     in 0..20 -> {
