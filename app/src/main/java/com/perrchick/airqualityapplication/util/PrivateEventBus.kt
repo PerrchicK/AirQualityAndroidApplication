@@ -18,9 +18,6 @@ class PrivateEventBus {
         const val UPDATE_LOCATION: String = BuildConfig.APPLICATION_ID + " - location updated"
     }
 
-    object Parameter {
-        const val COORDINATES = "coordinates"
-    }
     interface BroadcastReceiverListener {
         fun onBroadcastReceived(intent: Intent, receiver: PrivateEventBus.Receiver)
     }

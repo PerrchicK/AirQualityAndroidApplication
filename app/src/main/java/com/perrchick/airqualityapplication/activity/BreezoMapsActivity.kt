@@ -17,12 +17,15 @@ import com.google.android.gms.maps.model.*
 import com.perrchick.airqualityapplication.AirQualityApplication
 import com.perrchick.airqualityapplication.R
 import com.perrchick.airqualityapplication.bl.DecisionMaker
+import com.perrchick.airqualityapplication.dl.DrugScore
 import com.perrchick.airqualityapplication.util.*
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
 
-class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapClickListener {
+class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.OnMapClickListener,
+    DecisionMaker.DrugScoreListener {
+
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE: Int = 0x1001
     }
@@ -182,10 +185,10 @@ class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.On
         }
     }
 
-    private fun addBaqiMarker(currentLocation: LatLng? = null, animated: Boolean = false, value: Double? = null) {
+    private fun addBaqiMarker(currentLocation: LatLng? = null, animated: Boolean = false, hue: Float? = null) {
         googleMap?.let { _ ->
             if (currentLocation != null) {
-                setLocation(currentLocation, animated = animated, value = value)
+                setLocation(currentLocation, animated = animated, hue = hue)
             }
         }
     }
@@ -201,7 +204,7 @@ class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.On
         }
     }
 
-    private fun setLocation(currentLocation: LatLng, zoom: Float? = null, animated: Boolean = false, value: Double? = null) {
+    private fun setLocation(currentLocation: LatLng, zoom: Float? = null, animated: Boolean = false, hue: Float? = null) {
         var _zoom: Float? = zoom
         if (_zoom == null && googleMap?.cameraPosition?.zoom != null) {
             _zoom = googleMap?.cameraPosition!!.zoom
@@ -215,7 +218,7 @@ class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.On
             }
 
             //baqiMarker?.remove()
-            value?.let {
+            hue?.let {
                 var markerOptions = MarkerOptions()
                     .position(currentLocation)
                     .flat(true)
@@ -223,9 +226,9 @@ class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.On
                     //.title(Strings.localized(R.string.you_are_here))
                     //.icon(BitmapDescriptorFactory.fromResource(android.R.drawable.ic_menu_compass))
                         //TODO: Set color according to concentration value
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
+                    .icon(BitmapDescriptorFactory.defaultMarker(hue))
 
-                    markerOptions = markerOptions.title("$value")
+                    //markerOptions = markerOptions.title("$value")
 
                 baqiMarker = googleMap?.addMarker(markerOptions)
             }
@@ -233,18 +236,15 @@ class BreezoMapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleMap.On
     }
 
     override fun onMapClick(latLng: LatLng?) {
-        latLng?.let { currentLocation ->
-            val pollutantName = "pm25"
-            DecisionMaker.fetchPollutantValue(pollutantName, currentLocation.latitude,currentLocation.longitude) { value ->
-                AppLogger.log(value)
-                value?.let {
-                    Utils.debugToast("'$pollutantName' concentration value: $it")
-                    AirQualityApplication.shared()?.runOnUiThread {
-                        addBaqiMarker(latLng, animated = true, value = value)
-                    }
-                }
-            }
+        latLng?.let { clickedLocation ->
+            DecisionMaker.onUserChoseLocation(clickedLocation, this)
             updateNewBaqiLevel(null)
+        }
+    }
+
+    override fun onUpdate(drugScore: DrugScore?) {
+        drugScore?.let {
+            addBaqiMarker(it.location, animated = true, hue = it.color())
         }
     }
 }
